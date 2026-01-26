@@ -38,33 +38,80 @@
 //   }
 // }
 
+// import { NextResponse } from "next/server";
+// import clientPromise from "@/lib/mongodb";
+
+// export async function GET(request) {
+//   try {
+//     const { searchParams } = new URL(request.url);
+//     const busIdRaw = searchParams.get("busId"); // This will be "2.2"
+
+//     if (!busIdRaw) return NextResponse.json([]);
+
+//     const client = await clientPromise;
+//     const db = client.db("BusAttendance");
+    
+//     // We search for both number and string types to be 100% safe
+//     const members = await db.collection("members")
+//       .find({ 
+//         $or: [
+//           { busId: Number(busIdRaw) },
+//           { busId: busIdRaw }
+//         ]
+//       })
+//       .toArray();
+    
+//     console.log(`API Found ${members.length} members for Bus ID: ${busIdRaw}`);
+    
+//     return NextResponse.json(members || []);
+
+//   } catch (error) {
+//     console.error("API GET Error:", error);
+//     return NextResponse.json([]);
+//   }
+// }
+
+// export async function PATCH(request) {
+//   try {
+//     const { ids, isPresent } = await request.json();
+//     const client = await clientPromise;
+//     const db = client.db("BusAttendance");
+
+//     await db.collection("members").updateMany(
+//       { id: { $in: ids } },
+//       { $set: { isPresent } }
+//     );
+
+//     return NextResponse.json({ success: true });
+//   } catch (error) {
+//     return NextResponse.json({ error: "Update failed" }, { status: 500 });
+//   }
+// }
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const busIdRaw = searchParams.get("busId"); // This will be "2.2"
-
-    if (!busIdRaw) return NextResponse.json([]);
+    const busIdRaw = searchParams.get("busId");
 
     const client = await clientPromise;
     const db = client.db("BusAttendance");
-    
-    // We search for both number and string types to be 100% safe
-    const members = await db.collection("members")
-      .find({ 
+
+    let query = {};
+    if (busIdRaw) {
+      query = {
         $or: [
           { busId: Number(busIdRaw) },
           { busId: busIdRaw }
         ]
-      })
-      .toArray();
-    
-    console.log(`API Found ${members.length} members for Bus ID: ${busIdRaw}`);
-    
-    return NextResponse.json(members || []);
+      };
+    }
 
+    const members = await db.collection("members").find(query).toArray();
+    return NextResponse.json(members || []);
   } catch (error) {
     console.error("API GET Error:", error);
     return NextResponse.json([]);

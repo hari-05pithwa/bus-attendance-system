@@ -4,7 +4,7 @@ import Toggle from "./ui/Toggle";
 
 export default function AttendanceRow({ person, onToggle, searchQuery, highlightComponent: Highlight }) {
   return (
-    <div className="flex items-center justify-between bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm active:scale-[0.98] transition-all">
+    <div className="flex items-center justify-between bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm active:scale-[0.98] transition-all mb-4">
       <div className="flex items-center gap-4">
         <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors ${person.isPresent ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-300'}`}>
           <User size={20} />
