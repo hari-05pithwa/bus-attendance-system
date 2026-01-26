@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Bus, Loader2, ArrowRight, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
-// Simplified Bus List as requested
 const BUS_LIST = [
   { label: "1.1", value: "1.1" },
   { label: "2.1", value: "2.1" },
@@ -20,7 +19,6 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Load previously used Bus ID from localStorage on mount
   useEffect(() => {
     const savedBusId = localStorage.getItem("remembered_bus_id");
     if (savedBusId) {
@@ -30,14 +28,11 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!busId || !password.trim()) {
       toast.error("Required", { description: "Please select Bus ID and enter Vehicle Number!" });
       return;
     }
-
     setIsSubmitting(true);
-
     const res = await signIn("credentials", {
       email: busId,
       password: password,
@@ -50,26 +45,27 @@ export default function LoginPage() {
       router.push("/dashboard");
     } else {
       toast.error("Access Denied", {
-        description: "Incorrect credentials. Please check your Bus ID and Password.",
+        description: "Incorrect credentials. Please try again.",
       });
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-[#F8FAFC] px-6">
+    /* h-[100dvh] ensures it fits exactly within mobile browser chrome (Safari/Chrome bars) */
+    <div className="relative flex h-[100dvh] w-full flex-col items-center justify-center bg-[#F8FAFC] px-6 overflow-hidden">
       
-      {/* Main Login Card - Centered */}
-      <div className="w-full max-w-sm space-y-10 py-12">
-        <div className="text-center space-y-3">
+      {/* Main Login Card */}
+      <div className="w-full max-w-sm space-y-8">
+        <div className="text-center space-y-2">
           <div className="mx-auto w-16 h-16 bg-indigo-600 rounded-[24px] flex items-center justify-center shadow-2xl shadow-indigo-200">
-            <Lock className="text-white" size={30} strokeWidth={2.5} />
+            <Lock className="text-white" size={28} strokeWidth={2.5} />
           </div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Bus Portal</h1>
-          <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">Mission 92</p>
+          <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.3em]">Mission 92</p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+        <form className="space-y-5" onSubmit={handleSubmit} noValidate>
           <div className="space-y-4">
             {/* Bus ID Dropdown */}
             <div className="group space-y-1">
@@ -94,7 +90,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password (Vehicle Number) */}
+            {/* Password */}
             <div className="group space-y-1">
               <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1">
                 Vehicle Number
@@ -136,10 +132,10 @@ export default function LoginPage() {
         </form>
       </div>
 
-      {/* Footer Signature */}
-      <footer className="absolute bottom-8 w-full text-center">
+      {/* Footer Signature - Pinned closer to bottom */}
+      <footer className="absolute bottom-6 w-full text-center px-6">
         <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">
-          Developed by <span className="text-slate-400">Harikrishna Pithwa</span>
+          Developed by <span className="text-slate-400 font-black">Harikrishna Pithwa</span>
         </p>
       </footer>
     </div>
