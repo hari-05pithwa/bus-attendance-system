@@ -296,8 +296,8 @@ export default function Dashboard() {
       </main>
 
       <footer className="p-8 text-center">
-        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">
-          Shahibaug Bal Mandal
+        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">
+          Developed by <span className="text-slate-400">Harikrishna Pithwa</span>
         </p>
       </footer>
     </div>
