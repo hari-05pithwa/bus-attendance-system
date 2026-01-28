@@ -1,25 +1,25 @@
-// app/api/mobile-login/route.js
+// app/api/mobile-login/route.ts
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
-export async function POST(req) {
+export async function POST(req: Request) {
   try {
     const { busId, password } = await req.json();
 
     const client = await clientPromise;
     const db = client.db("BusAttendance");
 
-    // CRITICAL: Convert string "2.2" to number 2.2 to match MongoDB type
+    // CRITICAL: NextAuth uses float/number for busId in your DB
     const busIdNumber = parseFloat(busId);
 
     const user = await db.collection("users").findOne({
       busId: busIdNumber,
-      password: password, // Must be exact match (case sensitive)
+      password: password, // Matches your vehicle number
     });
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: "Invalid Credentials" },
+        { success: false, error: "Invalid ID or Vehicle Number" },
         { status: 401 },
       );
     }
@@ -29,6 +29,7 @@ export async function POST(req) {
       user: {
         busId: user.busId,
         name: user.name,
+        role: user.role || "admin",
       },
     });
   } catch (e) {
