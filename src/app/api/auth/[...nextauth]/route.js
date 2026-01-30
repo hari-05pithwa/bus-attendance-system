@@ -207,7 +207,6 @@
 
 
 //ai
->>>>>>> 52b3284 (4 step attendance pushed by hari)
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import clientPromise from "@/lib/mongodb";
@@ -223,47 +222,44 @@ export const authOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const client = await clientPromise;
-        const usersCollection = client.db("BusAttendance").collection("users");
+        try {
+          const client = await clientPromise;
+          const db = client.db("BusAttendance");
+          
+          // We use the "admins" collection as per your project requirements
+          const adminsCollection = db.collection("admins");
+          
+          // Using the raw string to match MongoDB Atlas data types
+          const busIdInput = credentials.email;
 
-        const busIdNumber = parseFloat(credentials.email);
+          const admin = await adminsCollection.findOne({ 
+            busId: busIdInput,
+            password: credentials.password 
+          });
 
-        const user = await usersCollection.findOne({
-          busId: busIdNumber,
-          password: credentials.password,
-        // 1. Updated collection name to "admins"
-        const adminsCollection = client.db("BusAttendance").collection("admins");
-        
-        // 2. We use the raw string from credentials.email to match your Atlas string data
-        const busIdInput = credentials.email;
-
-        // 3. Find admin where busId matches the string and password matches
-        const admin = await adminsCollection.findOne({ 
-          busId: busIdInput,
-          password: credentials.password 
-        });
-
-        if (admin) {
-          return {
-            id: user._id.toString(),
-            name: user.name,
-            busId: user.busId,
-            role: user.role || "admin", // Passes "superadmin" if role exists in DB
-            section: user.section || "Admin",
-            id: admin._id.toString(),
-            name: admin.name || `Admin ${admin.busId}`,
-            busId: admin.busId,
-            // Fallback to "superadmin" if ID is "0", else "admin"
-            role: admin.role || (admin.busId === "0" ? "superadmin" : "admin"),
-            section: admin.section || "General", 
-          };
+          if (admin) {
+            // Return the user object for the session
+            return {
+              id: admin._id.toString(),
+              name: admin.name || `Admin ${admin.busId}`,
+              busId: admin.busId,
+              // Logic: busId "0" is superadmin, others are admin unless specified
+              role: admin.role || (admin.busId === "0" ? "superadmin" : "admin"),
+              section: admin.section || "General", 
+            };
+          }
+          
+          return null; // Login failed
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
         }
-        return null;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // Transfer data from the user object to the token
       if (user) {
         token.busId = user.busId;
         token.role = user.role;
@@ -272,6 +268,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
+      // Transfer data from the token to the session object for the frontend
       if (session.user) {
         session.user.busId = token.busId;
         session.user.role = token.role;
@@ -280,8 +277,12 @@ export const authOptions = {
       return session;
     },
   },
-  pages: { signIn: "/" },
-  session: { strategy: "jwt" },
+  pages: { 
+    signIn: "/" 
+  },
+  session: { 
+    strategy: "jwt" 
+  },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
