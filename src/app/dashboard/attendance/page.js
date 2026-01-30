@@ -495,7 +495,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { ArrowLeft, Search, X, Loader2, MapPin, Navigation, Home, Bus, Users, ShieldCheck, Heart, UserCheck, ChevronRight, Baby } from "lucide-react";
 import Link from "next/link";
-import AttendanceRow from "@/components/AttendanceRow";
+import AttendanceRow from "../../../components/AttendanceRow";
 
 const HighlightedText = ({ text, query }) => {
   if (!query.trim()) return <span>{text}</span>;
