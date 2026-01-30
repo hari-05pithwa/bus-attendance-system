@@ -41,6 +41,7 @@ export default function Dashboard() {
   const firstName = session.user?.name
     ? session.user.name.split(" ")[0]
     : "Admin";
+ 
   const isSuperAdmin = session.user?.role === "superadmin";
 
   return (
@@ -77,7 +78,7 @@ export default function Dashboard() {
               {isSuperAdmin ? "System Master" : "Bus Control"}
             </p>
             <h1 className="text-4xl font-black tracking-tight text-slate-900">
-              Hi, {firstName}
+              Hi, Bus Leader
             </h1>
           </div>
 

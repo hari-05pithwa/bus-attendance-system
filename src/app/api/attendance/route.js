@@ -87,6 +87,74 @@
 //     return NextResponse.json({ error: "Update failed" }, { status: 500 });
 //   }
 // }
+
+
+
+
+
+
+
+// og
+// import { NextResponse } from "next/server";
+// import clientPromise from "@/lib/mongodb";
+
+// export const dynamic = 'force-dynamic';
+
+// export async function GET(request) {
+//   try {
+//     const { searchParams } = new URL(request.url);
+//     const busIdRaw = searchParams.get("busId");
+
+//     const client = await clientPromise;
+//     const db = client.db("BusAttendance");
+
+//     let query = {};
+//     if (busIdRaw) {
+//       query = {
+//         $or: [
+//           { busId: Number(busIdRaw) },
+//           { busId: busIdRaw }
+//         ]
+//       };
+//     }
+
+//     const members = await db.collection("members").find(query).toArray();
+//     return NextResponse.json(members || []);
+//   } catch (error) {
+//     console.error("API GET Error:", error);
+//     return NextResponse.json([]);
+//   }
+// }
+
+// export async function PATCH(request) {
+//   try {
+//     const { ids, isPresent } = await request.json();
+//     const client = await clientPromise;
+//     const db = client.db("BusAttendance");
+
+//     await db.collection("members").updateMany(
+//       { id: { $in: ids } },
+//       { $set: { isPresent } }
+//     );
+
+//     return NextResponse.json({ success: true });
+//   } catch (error) {
+//     return NextResponse.json({ error: "Update failed" }, { status: 500 });
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+// ai
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
@@ -95,42 +163,34 @@ export const dynamic = 'force-dynamic';
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const busIdRaw = searchParams.get("busId");
-
+    const busId = searchParams.get("busId");
     const client = await clientPromise;
     const db = client.db("BusAttendance");
-
-    let query = {};
-    if (busIdRaw) {
-      query = {
-        $or: [
-          { busId: Number(busIdRaw) },
-          { busId: busIdRaw }
-        ]
-      };
-    }
-
+    let query = (busId && busId !== "0") ? { busId: String(busId) } : {};
     const members = await db.collection("members").find(query).toArray();
     return NextResponse.json(members || []);
-  } catch (error) {
-    console.error("API GET Error:", error);
-    return NextResponse.json([]);
-  }
+  } catch (error) { return NextResponse.json([]); }
 }
 
 export async function PATCH(request) {
   try {
-    const { ids, isPresent } = await request.json();
+    const { ids, attendanceKey, status } = await request.json();
     const client = await clientPromise;
     const db = client.db("BusAttendance");
 
-    await db.collection("members").updateMany(
-      { id: { $in: ids } },
-      { $set: { isPresent } }
+    // ids[0] is either the member "id" or "phone"
+    const targetKey = ids[0];
+
+    await db.collection("members").updateOne(
+      { 
+        $or: [
+          { id: targetKey },
+          { phone: targetKey }
+        ] 
+      },
+      { $set: { [`attendence.${attendanceKey}`]: status } }
     );
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
-  }
+  } catch (error) { return NextResponse.json({ error: "Update failed" }, { status: 500 }); }
 }

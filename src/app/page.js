@@ -112,6 +112,7 @@ export default function LoginPage() {
             <div className="group space-y-1">
               <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1">
                 Vehicle Number
+                Password
               </label>
               <div className="relative flex items-center">
                 <Lock
@@ -120,7 +121,7 @@ export default function LoginPage() {
                 />
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter last 4 digits"
+                  placeholder="Enter password"
                   value={password}
                   className="w-full h-14 pl-12 pr-12 bg-white border-2 border-slate-100 rounded-2xl outline-none text-base font-bold text-slate-900 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all"
                   onChange={(e) => setPassword(e.target.value)}
