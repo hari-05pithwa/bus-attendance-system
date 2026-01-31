@@ -256,6 +256,7 @@
 //     </div>
 //   );
 // }
+
 "use client";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession, signOut } from "next-auth/react";
@@ -281,13 +282,9 @@ export default function ZoneDashboard() {
   const [activeAtPoint, setActiveAtPoint] = useState("At_1");
   const [expandedId, setExpandedId] = useState(null);
 
-  // UPDATED LOGOUT WITH TOAST AND ANIMATION
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    toast.loading("Logging out...", {
-      id: "logout-toast",
-      position: "top-center",
-    });
+    toast.loading("Logging out...", { id: "logout-toast", position: "top-center" });
     await signOut({ callbackUrl: "/" });
   };
 
@@ -296,7 +293,7 @@ export default function ZoneDashboard() {
       const res = await fetch("/api/attendance", { cache: "no-store" });
       const data = await res.json();
       setAllMembers(Array.isArray(data) ? data : []);
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+    } catch (e) { console.error("Zone Update Error:", e); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
@@ -401,8 +398,15 @@ export default function ZoneDashboard() {
                 return (
                   <div key={personId} className="flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden transition-all">
                     <div onClick={() => hasPhone && toggleExpand(personId)} className={`p-4 flex items-center justify-between ${hasPhone ? 'cursor-pointer active:bg-slate-50' : ''}`}>
-                      <div><p className="font-black text-slate-900 text-sm">{person.name}</p><p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{person.role}</p></div>
-                      {person.attendence?.[activeAtPoint] ? <CheckCircle2 className="text-emerald-500" size={18}/> : <UserX className="text-rose-400" size={18}/>}
+                      <div className="flex flex-col">
+                        <p className="font-black text-slate-900 text-sm">{person.name}</p>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">{person.role}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {/* Dropdown Indicator for members with phone numbers */}
+                        {hasPhone && (isExpanded ? <ChevronUp size={14} className="text-slate-300" /> : <ChevronDown size={14} className="text-slate-300" />)}
+                        {person.attendence?.[activeAtPoint] ? <CheckCircle2 className="text-emerald-500" size={18}/> : <UserX className="text-rose-400" size={18}/>}
+                      </div>
                     </div>
                     {hasPhone && isExpanded && (
                       <div className="px-4 pb-4 pt-0 animate-in slide-in-from-top-2 duration-200">

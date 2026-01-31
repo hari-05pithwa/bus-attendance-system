@@ -976,13 +976,9 @@ export default function MasterPage() {
   const [expandedId, setExpandedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // UPDATED LOGOUT WITH TOAST AND ANIMATION
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    toast.loading("Logging out...", {
-      id: "logout-toast",
-      position: "top-center",
-    });
+    toast.loading("Logging out...", { id: "logout-toast", position: "top-center" });
     await signOut({ callbackUrl: "/" });
   };
 
@@ -1001,12 +997,12 @@ export default function MasterPage() {
   }, [fetchData]);
 
   const currentSlot = SLOT_CONFIG[activeAtPoint];
-  const overallTotalCount = useMemo(() => allMembers.length, [allMembers]);
+  const overallTotalCount = allMembers.length;
 
   const searchedMembers = useMemo(() => {
     if (!searchQuery.trim()) return allMembers;
     const query = searchQuery.toLowerCase().trim();
-    return allMembers.filter(m => m.name?.toLowerCase().includes(query) || String(m.phone || "").includes(query));
+    return allMembers.filter(m => m.name?.toLowerCase().includes(query) || String(m.phone || m.number || "").includes(query));
   }, [allMembers, searchQuery]);
 
   const groupedBusSummaries = useMemo(() => {
@@ -1045,17 +1041,19 @@ export default function MasterPage() {
     return busList.filter((m) => filterTab === "present" ? m.attendence?.[activeAtPoint] : !m.attendence?.[activeAtPoint]);
   }, [searchedMembers, selectedBus, filterTab, activeAtPoint]);
 
+  const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
+
   if (loading) return <div className="h-screen flex items-center justify-center bg-white"><Loader2 className="animate-spin text-indigo-600" size={32} /></div>;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-48 font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] pb-48 font-sans text-slate-900">
       <nav className="p-6 bg-white border-b sticky top-0 z-30 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {selectedBus !== "all" ? (
-                <button onClick={() => setSelectedBus("all")} className="p-2 bg-slate-50 rounded-xl active:scale-90 transition-all"><ArrowLeft size={20}/></button>
+                <button onClick={() => { setSelectedBus("all"); setExpandedId(null); }} className="p-2 bg-slate-100 rounded-xl active:scale-90 transition-all"><ArrowLeft size={20}/></button>
             ) : <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100"><ShieldCheck size={20} className="text-white"/></div>}
-            <div><h1 className="font-black text-xl text-slate-900 leading-none">Fleet Master</h1><span className={`text-[8px] font-black uppercase ${currentSlot.color}`}>{currentSlot.label}</span></div>
+            <div><h1 className="font-black text-xl tracking-tight leading-none">Fleet Master</h1><span className={`text-[8px] font-black uppercase tracking-widest ${currentSlot.color}`}>{currentSlot.label}</span></div>
           </div>
 
           <button onClick={handleLogout} disabled={isLoggingOut} className="h-10 px-3 flex items-center gap-2 bg-white border border-slate-100 text-slate-400 rounded-xl active:bg-rose-50 active:text-rose-500 transition-all shadow-sm">
@@ -1070,7 +1068,7 @@ export default function MasterPage() {
         </div>
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
           {Object.entries(SLOT_CONFIG).map(([key, config]) => (
-            <button key={key} onClick={() => setActiveAtPoint(key)} className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase transition-all border-2 whitespace-nowrap ${activeAtPoint === key ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-white border-transparent text-slate-300"}`}><config.icon size={12} /> A{key.split("_")[1]}</button>
+            <button key={key} onClick={() => { setActiveAtPoint(key); setExpandedId(null); }} className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase transition-all border-2 whitespace-nowrap ${activeAtPoint === key ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-white border-transparent text-slate-300"}`}><config.icon size={12} /> A{key.split("_")[1]}</button>
           ))}
         </div>
       </nav>
@@ -1081,9 +1079,9 @@ export default function MasterPage() {
             <div className="bg-white p-6 rounded-[35px] border border-slate-100 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-5">
                 <div className="h-14 w-14 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center"><Users size={28} /></div>
-                <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Members</p><h2 className="text-3xl font-black text-slate-900">{overallTotalCount.toLocaleString()}</h2></div>
+                <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Total Members</p><h2 className="text-3xl font-black">{overallTotalCount.toLocaleString()}</h2></div>
               </div>
-              <div className="text-right"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Active Buses</p><h4 className="text-xl font-black text-indigo-600">{Object.values(groupedBusSummaries).flat().length}</h4></div>
+              <div className="text-right"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Buses</p><h4 className="text-xl font-black text-indigo-600">{Object.values(groupedBusSummaries).flat().length}</h4></div>
             </div>
             <div className="space-y-10">
               {Object.keys(groupedBusSummaries).sort((a,b) => Number(a) - Number(b)).map((zoneId) => (
@@ -1115,12 +1113,30 @@ export default function MasterPage() {
               <button onClick={() => setFilterTab("absent")} className={`flex-1 py-3 text-[10px] font-black uppercase rounded-xl transition-all ${filterTab === "absent" ? "bg-white text-rose-600 shadow-sm" : "text-slate-400"}`}>Absent</button>
             </div>
             <div className="space-y-2">
-              {filteredList.map(person => (
-                <div key={person.id || person.phone} className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
-                  <div><p className="font-black text-slate-900 text-sm">{person.name}</p><p className="text-[8px] font-bold text-slate-400 uppercase">{person.role}</p></div>
-                  {person.attendence?.[activeAtPoint] ? <CheckCircle2 className="text-emerald-500" size={18}/> : <UserX className="text-rose-400" size={18}/>}
-                </div>
-              ))}
+              {filteredList.map(person => {
+                const personId = person._id || person.id || person.phone;
+                const hasPhone = person.phone || person.number;
+                const isExpanded = expandedId === personId;
+                return (
+                  <div key={personId} className="flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden transition-all">
+                    <div onClick={() => hasPhone && toggleExpand(personId)} className={`p-4 flex items-center justify-between ${hasPhone ? 'cursor-pointer active:bg-slate-50' : ''}`}>
+                      <div>
+                        <p className="font-black text-slate-900 text-sm">{person.name}</p>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">{person.role}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {hasPhone && (isExpanded ? <ChevronUp size={14} className="text-slate-300" /> : <ChevronDown size={14} className="text-slate-300" />)}
+                        {person.attendence?.[activeAtPoint] ? <CheckCircle2 className="text-emerald-500" size={18}/> : <UserX className="text-rose-400" size={18}/>}
+                      </div>
+                    </div>
+                    {hasPhone && isExpanded && (
+                      <div className="px-4 pb-4 pt-0 animate-in slide-in-from-top-2 duration-200">
+                        <a href={`tel:${person.phone || person.number}`} className="flex items-center justify-center gap-2 w-full py-2 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest border border-indigo-100 active:scale-95 transition-all"><Phone size={12} /> Call</a>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1129,7 +1145,7 @@ export default function MasterPage() {
       <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 z-40 pointer-events-none">
         <div className="max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl rounded-[30px] md:rounded-[35px] p-4 md:p-6 flex items-center justify-between pointer-events-auto shadow-2xl text-white border border-white/10">
           <div className="flex flex-col pl-1 md:pl-2">
-            <p className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-tight">{fleetTotals.isGlobal ? "Total Attendance" : `Bus ${selectedBus} Total`}</p>
+            <p className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-tight">{fleetTotals.isGlobal ? "Total Fleet" : `Bus ${selectedBus} Stats`}</p>
             <h2 className="text-white font-black text-xs md:text-sm uppercase tracking-tight truncate max-w-[100px] md:max-w-none">{currentSlot.label}</h2>
           </div>
           <div className="flex items-center gap-4 md:gap-8 pr-1 md:pr-2">
