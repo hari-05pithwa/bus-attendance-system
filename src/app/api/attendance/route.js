@@ -155,8 +155,98 @@
 
 
 // ai
+// import { NextResponse } from "next/server";
+// import clientPromise from "../../../lib/mongodb";
+
+// export const dynamic = 'force-dynamic';
+
+// export async function GET(request) {
+//   try {
+//     const { searchParams } = new URL(request.url);
+//     const busId = searchParams.get("busId");
+//     const client = await clientPromise;
+//     const db = client.db("BusAttendance");
+//     let query = (busId && busId !== "0") ? { busId: String(busId) } : {};
+//     const members = await db.collection("members").find(query).toArray();
+//     return NextResponse.json(members || []);
+//   } catch (error) { return NextResponse.json([]); }
+// }
+
+// export async function PATCH(request) {
+//   try {
+//     const { ids, attendanceKey, status } = await request.json();
+//     const client = await clientPromise;
+//     const db = client.db("BusAttendance");
+
+//     // ids[0] is either the member "id" or "phone"
+//     const targetKey = ids[0];
+
+//     await db.collection("members").updateOne(
+//       { 
+//         $or: [
+//           { id: targetKey },
+//           { phone: targetKey }
+//         ] 
+//       },
+//       { $set: { [`attendence.${attendanceKey}`]: status } }
+//     );
+
+//     return NextResponse.json({ success: true });
+//   } catch (error) { return NextResponse.json({ error: "Update failed" }, { status: 500 }); }
+// }
+
+
+
+//api
+// import { NextResponse } from "next/server";
+// import clientPromiseData from "../../../lib/mongodb-data"; // Use the new client
+
+// export const dynamic = 'force-dynamic';
+
+// export async function GET(request) {
+//   try {
+//     const { searchParams } = new URL(request.url);
+//     const busId = searchParams.get("busId");
+    
+//     const client = await clientPromiseData;
+//     const db = client.db("BusAttendance"); // Correct DB name for mission92 cluster
+    
+//     let query = (busId && busId !== "0") ? { busId: String(busId) } : {};
+//     const members = await db.collection("members").find(query).toArray();
+    
+//     return NextResponse.json(members || []);
+//   } catch (error) { 
+//     console.error("Data Fetch Error:", error);
+//     return NextResponse.json([]); 
+//   }
+// }
+
+// export async function PATCH(request) {
+//   try {
+//     const { ids, attendanceKey, status } = await request.json();
+//     const client = await clientPromiseData;
+//     const db = client.db("BusAttendance");
+
+//     const targetKey = ids[0];
+
+//     await db.collection("members").updateOne(
+//       { 
+//         $or: [
+//           { id: targetKey },
+//           { phone: targetKey }
+//         ] 
+//       },
+//       { $set: { [`attendence.${attendanceKey}`]: status } }
+//     );
+
+//     return NextResponse.json({ success: true });
+//   } catch (error) { 
+//     return NextResponse.json({ error: "Update failed" }, { status: 500 }); 
+//   }
+// }
+
 import { NextResponse } from "next/server";
-import clientPromise from "../../../lib/mongodb";
+import clientPromiseData from "../../../lib/mongodb-data"; 
 
 export const dynamic = 'force-dynamic';
 
@@ -164,8 +254,9 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const busId = searchParams.get("busId");
-    const client = await clientPromise;
-    const db = client.db("BusAttendance");
+    const client = await clientPromiseData;
+    const db = client.db("BusAttendance"); 
+    
     let query = (busId && busId !== "0") ? { busId: String(busId) } : {};
     const members = await db.collection("members").find(query).toArray();
     return NextResponse.json(members || []);
@@ -175,22 +266,12 @@ export async function GET(request) {
 export async function PATCH(request) {
   try {
     const { ids, attendanceKey, status } = await request.json();
-    const client = await clientPromise;
+    const client = await clientPromiseData;
     const db = client.db("BusAttendance");
-
-    // ids[0] is either the member "id" or "phone"
-    const targetKey = ids[0];
-
     await db.collection("members").updateOne(
-      { 
-        $or: [
-          { id: targetKey },
-          { phone: targetKey }
-        ] 
-      },
+      { $or: [{ id: ids[0] }, { phone: ids[0] }] },
       { $set: { [`attendence.${attendanceKey}`]: status } }
     );
-
     return NextResponse.json({ success: true });
   } catch (error) { return NextResponse.json({ error: "Update failed" }, { status: 500 }); }
 }

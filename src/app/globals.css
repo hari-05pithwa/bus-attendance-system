@@ -24,3 +24,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Add this to your globals.css */
+@layer base {
+  *:focus,
+  *:focus-visible,
+  *:active {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
