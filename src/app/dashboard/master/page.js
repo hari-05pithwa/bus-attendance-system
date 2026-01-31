@@ -950,14 +950,13 @@
 //   );
 // }
 
-
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   Loader2,
-  RefreshCcw,
+  LogOut,
   MapPin,
   Navigation,
   Bus,
@@ -973,6 +972,7 @@ import {
   X,
   Users 
 } from "lucide-react";
+import { toast } from "sonner";
 
 const SLOT_CONFIG = {
   At_1: { label: "Source Pickup", icon: MapPin, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200" },
@@ -985,15 +985,23 @@ export default function MasterPage() {
   const { data: session } = useSession();
   const [allMembers, setAllMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [selectedBus, setSelectedBus] = useState("all");
   const [filterTab, setFilterTab] = useState("present");
   const [activeAtPoint, setActiveAtPoint] = useState("At_1");
   const [expandedId, setExpandedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchData = useCallback(async (showIndicator = false) => {
-    if (showIndicator) setIsRefreshing(true);
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    toast.loading("Logging out...", {
+      id: "logout-toast",
+      position: "top-center",
+    });
+    await signOut({ callbackUrl: "/" });
+  };
+
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch("/api/attendance", { cache: "no-store" });
       const data = await res.json();
@@ -1002,7 +1010,6 @@ export default function MasterPage() {
       console.error("Live Update Error:", e);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   }, []);
 
@@ -1013,11 +1020,8 @@ export default function MasterPage() {
   }, [fetchData]);
 
   const currentSlot = SLOT_CONFIG[activeAtPoint];
-
-  // Logic for the stats
   const overallTotalCount = useMemo(() => allMembers.length, [allMembers]);
 
-  // 1. Search Logic: Filter all members by name or phone
   const searchedMembers = useMemo(() => {
     if (!searchQuery.trim()) return allMembers;
     const query = searchQuery.toLowerCase().trim();
@@ -1027,7 +1031,6 @@ export default function MasterPage() {
     );
   }, [allMembers, searchQuery]);
 
-  // 2. Grouping Logic: Uses searchedMembers instead of allMembers
   const groupedBusSummaries = useMemo(() => {
     const groups = searchedMembers.reduce((acc, member) => {
       const bId = String(member.busId);
@@ -1049,7 +1052,6 @@ export default function MasterPage() {
     }, {});
   }, [searchedMembers, activeAtPoint]);
 
-  // 3. Footer Logic: Fixes the mismatch by syncing with the current view
   const fleetTotals = useMemo(() => {
     const dataToCount = selectedBus === "all" 
       ? searchedMembers 
@@ -1102,10 +1104,20 @@ export default function MasterPage() {
               </span>
             </div>
           </div>
-          <RefreshCcw size={16} className={`${isRefreshing ? "animate-spin" : ""} text-indigo-500`} />
+          
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="h-10 w-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-xl active:bg-rose-50 active:text-rose-500 transition-all disabled:opacity-50 shadow-sm"
+          >
+            {isLoggingOut ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <LogOut size={18} />
+            )}
+          </button>
         </div>
 
-        {/* SEARCH BAR */}
         <div className="relative group">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
           <input 
@@ -1140,7 +1152,6 @@ export default function MasterPage() {
       <div className="p-6 max-w-xl mx-auto">
         {selectedBus === "all" ? (
           <div className="space-y-6">
-            {/* OVERALL TOTAL MEMBERS CARD */}
             <div className="bg-white p-6 rounded-[35px] border border-slate-100 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-5">
                 <div className="h-14 w-14 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center">

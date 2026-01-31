@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   Loader2,
-  RefreshCcw,
+  LogOut,
   MapPin,
   Navigation,
   Bus,
@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp
 } from "lucide-react";
+import { toast } from "sonner";
 
 const SLOT_CONFIG = {
   At_1: { label: "Source Pickup", icon: MapPin, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200" },
@@ -28,14 +29,22 @@ export default function ZoneDashboard() {
   const { data: session } = useSession();
   const [allMembers, setAllMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [selectedBus, setSelectedBus] = useState("overview");
   const [filterTab, setFilterTab] = useState("present");
   const [activeAtPoint, setActiveAtPoint] = useState("At_1");
-  const [expandedId, setExpandedId] = useState(null); // Track phone dropdown
+  const [expandedId, setExpandedId] = useState(null);
 
-  const fetchData = useCallback(async (showIndicator = false) => {
-    if (showIndicator) setIsRefreshing(true);
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    toast.loading("Logging out...", {
+      id: "logout-toast",
+      position: "top-center",
+    });
+    await signOut({ callbackUrl: "/" });
+  };
+
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch("/api/attendance", { cache: "no-store" });
       const data = await res.json();
@@ -44,7 +53,6 @@ export default function ZoneDashboard() {
       console.error("Zone Update Error:", e);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   }, []);
 
@@ -120,7 +128,18 @@ export default function ZoneDashboard() {
               </span>
             </div>
           </div>
-          <RefreshCcw size={16} className={`${isRefreshing ? "animate-spin" : ""} text-emerald-500`} />
+          
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="h-10 w-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-xl active:bg-rose-50 active:text-rose-500 transition-all disabled:opacity-50 shadow-sm"
+          >
+            {isLoggingOut ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <LogOut size={18} />
+            )}
+          </button>
         </div>
 
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">

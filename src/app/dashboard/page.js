@@ -187,13 +187,6 @@ export default function Dashboard() {
           )}
         </div>
       </main>
-
-      <footer className="p-8 text-center mt-auto">
-        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">
-          Developed by{" "}
-          <span className="text-slate-400 font-black">Harikrishna Pithwa</span>
-        </p>
-      </footer>
     </div>
   );
 }
