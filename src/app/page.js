@@ -569,29 +569,35 @@
 // apk
 "use client";
 import Link from "next/link";
+import Image from "next/image"; // Import the Image component
 import {
   Bus,
   MapPin,
   ShieldCheck,
   ArrowRight,
   Download,
-  Smartphone,
 } from "lucide-react";
 
 export default function RoleSelectionPage() {
-  // External Expo Build Link
-  const EXPO_LINK = "https://expo.dev/accounts/3167bhavikrathod/projects/BusTraker/builds/e86f4071-a997-47dc-9aac-4003d4e6416c";
+  const EXPO_LINK = "https://expo.dev/artifacts/eas/uGHz4DWTu23qEwbsih9Rtb.apk";
 
   return (
     <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#F8FAFC] px-6 overflow-hidden relative font-sans">
-      {/* Decorative Background Blur */}
       <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50" />
       <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-50" />
 
       <div className="w-full max-w-sm space-y-10 text-center relative z-10">
         <div className="space-y-2">
-          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-4 border border-slate-100">
-            <Smartphone className="text-indigo-600" size={24} />
+          {/* LOGO REPLACEMENT HERE */}
+          <div className="inline-flex items-center justify-center p-2 bg-white  mb-4overflow-hidden">
+             <Image 
+               src="/logo.png" 
+               alt="App Logo" 
+               width={100} 
+               height={100} 
+               className="object-contain"
+               priority 
+             />
           </div>
           <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight">
             Access Portal
@@ -625,15 +631,13 @@ export default function RoleSelectionPage() {
           />
         </div>
 
-        {/* EXTERNAL APK DOWNLOAD BUTTON */}
         <div className="pt-6">
           <a
             href={EXPO_LINK}
-            target="_blank" // Opens Expo in a new tab
+            target="_blank"
             rel="noopener noreferrer"
             className="group relative inline-flex items-center gap-3 px-8 py-4 bg-slate-900 rounded-[24px] text-white transition-all active:scale-95 shadow-xl shadow-slate-200 overflow-hidden"
           >
-            {/* Animated Shimmer Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-transform" />
 
             <div className="p-2 bg-white/10 rounded-xl">
