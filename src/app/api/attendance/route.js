@@ -245,10 +245,51 @@
 //   }
 // }
 
+// import { NextResponse } from "next/server";
+// import clientPromiseData from "../../../lib/mongodb-data"; 
+
+// export const dynamic = 'force-dynamic';
+
+// export async function GET(request) {
+//   try {
+//     const { searchParams } = new URL(request.url);
+//     const busId = searchParams.get("busId");
+//     const client = await clientPromiseData;
+//     const db = client.db("BusAttendance"); 
+    
+//     let query = (busId && busId !== "0") ? { busId: String(busId) } : {};
+//     const members = await db.collection("members").find(query).toArray();
+//     return NextResponse.json(members || []);
+//   } catch (error) { return NextResponse.json([]); }
+// }
+
+// export async function PATCH(request) {
+//   try {
+//     const { ids, attendanceKey, status } = await request.json();
+//     const client = await clientPromiseData;
+//     const db = client.db("BusAttendance");
+//     await db.collection("members").updateOne(
+//       { $or: [{ id: ids[0] }, { phone: ids[0] }] },
+//       { $set: { [`attendence.${attendanceKey}`]: status } }
+//     );
+//     return NextResponse.json({ success: true });
+//   } catch (error) { return NextResponse.json({ error: "Update failed" }, { status: 500 }); }
+// }
+
 import { NextResponse } from "next/server";
 import clientPromiseData from "../../../lib/mongodb-data"; 
+import Pusher from "pusher"; // npm install pusher
 
 export const dynamic = 'force-dynamic';
+
+// 1. Initialize Pusher with your credentials
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.PUSHER_CLUSTER,
+  useTLS: true,
+});
 
 export async function GET(request) {
   try {
@@ -260,7 +301,9 @@ export async function GET(request) {
     let query = (busId && busId !== "0") ? { busId: String(busId) } : {};
     const members = await db.collection("members").find(query).toArray();
     return NextResponse.json(members || []);
-  } catch (error) { return NextResponse.json([]); }
+  } catch (error) { 
+    return NextResponse.json([]); 
+  }
 }
 
 export async function PATCH(request) {
@@ -268,10 +311,23 @@ export async function PATCH(request) {
     const { ids, attendanceKey, status } = await request.json();
     const client = await clientPromiseData;
     const db = client.db("BusAttendance");
+
+    // 2. Perform the Database Update
     await db.collection("members").updateOne(
       { $or: [{ id: ids[0] }, { phone: ids[0] }] },
       { $set: { [`attendence.${attendanceKey}`]: status } }
     );
+
+    // 3. TRIGGER PUSHER (This is what makes it Zero Delay!)
+    // This broadcasts a signal to any active Zone Admin dashboards
+    await pusher.trigger("attendance-channel", "update", {
+      busId: ids[0], // Optional: pass which bus was updated
+      key: attendanceKey
+    });
+
     return NextResponse.json({ success: true });
-  } catch (error) { return NextResponse.json({ error: "Update failed" }, { status: 500 }); }
+  } catch (error) { 
+    console.error("Update failed:", error);
+    return NextResponse.json({ error: "Update failed" }, { status: 500 }); 
+  }
 }
