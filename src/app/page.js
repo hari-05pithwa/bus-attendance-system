@@ -155,26 +155,18 @@
 //         </form>
 //       </div>
 
-      
 //     </div>
 //   );
 // }
-
-
-
-
-
-
-
 
 //ai
 // "use client";
 // import { useState, useEffect } from "react";
 // import { signIn } from "next-auth/react";
 // import { useRouter } from "next/navigation";
-// import { 
-//   Eye, EyeOff, Lock, Bus, Loader2, ArrowRight, 
-//   ChevronDown, ShieldCheck, MapPin 
+// import {
+//   Eye, EyeOff, Lock, Bus, Loader2, ArrowRight,
+//   ChevronDown, ShieldCheck, MapPin
 // } from "lucide-react";
 // import { toast } from "sonner";
 
@@ -204,7 +196,7 @@
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
-    
+
 //     // Logic to determine the identifier for Atlas authentication
 //     let identifier = busId;
 //     if (role === 'super') identifier = "master"; // Forces 'master' as the username
@@ -213,9 +205,9 @@
 //       toast.error("Required", { description: "Please complete all fields!" });
 //       return;
 //     }
-    
+
 //     setIsSubmitting(true);
-    
+
 //     // verify credentials against your Atlas 'admins' collection
 //     const res = await signIn("credentials", {
 //       email: identifier,
@@ -228,7 +220,7 @@
 //       // Verified redirection based on the authenticated role
 //       if (role === 'super') router.push("/dashboard/master");
 //       else if (role === 'zone') router.push("/dashboard/zone");
-//       else router.push("/dashboard"); 
+//       else router.push("/dashboard");
 //     } else {
 //       toast.error("Access Denied", { description: "Incorrect credentials." });
 //       setIsSubmitting(false);
@@ -244,25 +236,25 @@
 //             <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Access Portal</h1>
 //             <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Select your role to continue</p>
 //           </div>
-          
+
 //           <div className="grid grid-cols-1 gap-4">
-//             <RoleButton 
-//               icon={<Bus />} 
-//               label="Bus Admin" 
+//             <RoleButton
+//               icon={<Bus />}
+//               label="Bus Admin"
 //               desc="Manage specific bus attendance"
 //               onClick={() => setRole('admin')}
 //               color="bg-indigo-600"
 //             />
-//             <RoleButton 
-//               icon={<MapPin />} 
-//               label="Zone Admin" 
+//             <RoleButton
+//               icon={<MapPin />}
+//               label="Zone Admin"
 //               desc="View entire zone statistics"
 //               onClick={() => setRole('zone')}
 //               color="bg-emerald-600"
 //             />
-//             <RoleButton 
-//               icon={<ShieldCheck />} 
-//               label="Super Admin" 
+//             <RoleButton
+//               icon={<ShieldCheck />}
+//               label="Super Admin"
 //               desc="Master system control"
 //               onClick={() => setRole('super')}
 //               color="bg-slate-900"
@@ -277,7 +269,7 @@
 //   return (
 //     <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#F8FAFC] px-6">
 //       <div className="w-full max-w-sm space-y-6">
-//         <button 
+//         <button
 //           onClick={() => { setRole(null); setBusId(""); setPassword(""); }}
 //           className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-indigo-600 transition-colors"
 //         >
@@ -303,8 +295,8 @@
 //                   {role === 'admin' ? (
 //                     <>
 //                       <Bus size={18} className="absolute left-4 text-slate-400" />
-//                       <select 
-//                         value={busId} 
+//                       <select
+//                         value={busId}
 //                         onChange={(e) => setBusId(e.target.value)}
 //                         className="w-full h-12 pl-12 pr-10 bg-slate-50 border-2 border-transparent focus:border-indigo-600 rounded-2xl outline-none font-bold text-slate-900 appearance-none cursor-pointer"
 //                       >
@@ -316,8 +308,8 @@
 //                   ) : role === 'zone' ? (
 //                     <>
 //                       <MapPin size={18} className="absolute left-4 text-slate-400" />
-//                       <select 
-//                         value={busId} 
+//                       <select
+//                         value={busId}
 //                         onChange={(e) => setBusId(e.target.value)}
 //                         className="w-full h-12 pl-12 pr-10 bg-slate-50 border-2 border-transparent focus:border-indigo-600 rounded-2xl outline-none font-bold text-slate-900 appearance-none cursor-pointer"
 //                       >
@@ -370,7 +362,7 @@
 
 // function RoleButton({ icon, label, desc, onClick, color }) {
 //   return (
-//     <button 
+//     <button
 //       onClick={onClick}
 //       className="group w-full bg-white p-4 rounded-[32px] border-2 border-slate-100 hover:border-indigo-600 hover:shadow-xl transition-all flex items-center gap-5 text-left active:scale-95"
 //     >
@@ -385,11 +377,6 @@
 //     </button>
 //   );
 // }
-
-
-
-
-
 
 //api
 // "use client";
@@ -543,39 +530,162 @@
 //   );
 // }
 
-
 //api 2
+// "use client";
+// import { useRouter } from "next/navigation";
+// import { Bus, MapPin, ShieldCheck, ArrowRight } from "lucide-react";
+
+// export default function RoleSelectionPage() {
+//   const router = useRouter();
+
+//   return (
+//     <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#F8FAFC] px-6">
+//       <div className="w-full max-w-sm space-y-8 text-center">
+//         <div className="space-y-2">
+//           <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Access Portal</h1>
+//           <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Select your role to continue</p>
+//         </div>
+
+//         <div className="grid grid-cols-1 gap-4">
+//           <RoleButton icon={<Bus />} label="Bus Admin" desc="Manage specific bus" onClick={() => router.push("/login/bus")} color="bg-indigo-600" />
+//           <RoleButton icon={<MapPin />} label="Zone Admin" desc="View zone statistics" onClick={() => router.push("/login/zone")} color="bg-emerald-600" />
+//           <RoleButton icon={<ShieldCheck />} label="Super Admin" desc="Master system control" onClick={() => router.push("/login/master")} color="bg-slate-900" />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function RoleButton({ icon, label, desc, onClick, color }) {
+//   return (
+//     <button onClick={onClick} className="group w-full bg-white p-4 rounded-[32px] border-2 border-slate-100 hover:border-indigo-600 transition-all flex items-center gap-5 text-left active:scale-95">
+//       <div className={`${color} h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-lg`}>{icon}</div>
+//       <div className="flex-1"><h3 className="font-black text-slate-900 uppercase text-sm tracking-tight">{label}</h3><p className="text-slate-400 text-[10px] font-bold">{desc}</p></div>
+//       <ArrowRight className="ml-auto text-slate-200 group-hover:text-indigo-600 transition-colors" size={20} />
+//     </button>
+//   );
+// }
+
+// apk
 "use client";
-import { useRouter } from "next/navigation";
-import { Bus, MapPin, ShieldCheck, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import {
+  Bus,
+  MapPin,
+  ShieldCheck,
+  ArrowRight,
+  Download,
+  Smartphone,
+} from "lucide-react";
 
 export default function RoleSelectionPage() {
-  const router = useRouter();
+  // External Expo Build Link
+  const EXPO_LINK = "https://expo.dev/accounts/3167bhavikrathod/projects/BusTraker/builds/e86f4071-a997-47dc-9aac-4003d4e6416c";
 
   return (
-    <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#F8FAFC] px-6">
-      <div className="w-full max-w-sm space-y-8 text-center">
+    <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#F8FAFC] px-6 overflow-hidden relative font-sans">
+      {/* Decorative Background Blur */}
+      <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-50" />
+
+      <div className="w-full max-w-sm space-y-10 text-center relative z-10">
         <div className="space-y-2">
-          <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Access Portal</h1>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Select your role to continue</p>
+          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-4 border border-slate-100">
+            <Smartphone className="text-indigo-600" size={24} />
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight">
+            Access Portal
+          </h1>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">
+            Select your role to continue
+          </p>
         </div>
-        
+
         <div className="grid grid-cols-1 gap-4">
-          <RoleButton icon={<Bus />} label="Bus Admin" desc="Manage specific bus" onClick={() => router.push("/login/bus")} color="bg-indigo-600" />
-          <RoleButton icon={<MapPin />} label="Zone Admin" desc="View zone statistics" onClick={() => router.push("/login/zone")} color="bg-emerald-600" />
-          <RoleButton icon={<ShieldCheck />} label="Super Admin" desc="Master system control" onClick={() => router.push("/login/master")} color="bg-slate-900" />
+          <RoleButton
+            icon={<Bus />}
+            label="Bus Admin"
+            desc="Manage specific bus"
+            href="/login/bus"
+            color="bg-indigo-600"
+          />
+          <RoleButton
+            icon={<MapPin />}
+            label="Zone Admin"
+            desc="View zone statistics"
+            href="/login/zone"
+            color="bg-emerald-600"
+          />
+          <RoleButton
+            icon={<ShieldCheck />}
+            label="Super Admin"
+            desc="Master system control"
+            href="/login/master"
+            color="bg-slate-900"
+          />
+        </div>
+
+        {/* EXTERNAL APK DOWNLOAD BUTTON */}
+        <div className="pt-6">
+          <a
+            href={EXPO_LINK}
+            target="_blank" // Opens Expo in a new tab
+            rel="noopener noreferrer"
+            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-slate-900 rounded-[24px] text-white transition-all active:scale-95 shadow-xl shadow-slate-200 overflow-hidden"
+          >
+            {/* Animated Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-transform" />
+
+            <div className="p-2 bg-white/10 rounded-xl">
+              <Download
+                size={18}
+                className="group-hover:translate-y-0.5 transition-transform"
+              />
+            </div>
+
+            <div className="flex flex-col items-start justify-center leading-none">
+              <span className="text-[14px] font-black tracking-tight uppercase">
+                Download APK
+              </span>
+            </div>
+          </a>
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes shimmer {
+          100% {
+            transform: translateX(100%);
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
-function RoleButton({ icon, label, desc, onClick, color }) {
+function RoleButton({ icon, label, desc, href, color }) {
   return (
-    <button onClick={onClick} className="group w-full bg-white p-4 rounded-[32px] border-2 border-slate-100 hover:border-indigo-600 transition-all flex items-center gap-5 text-left active:scale-95">
-      <div className={`${color} h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-lg`}>{icon}</div>
-      <div className="flex-1"><h3 className="font-black text-slate-900 uppercase text-sm tracking-tight">{label}</h3><p className="text-slate-400 text-[10px] font-bold">{desc}</p></div>
-      <ArrowRight className="ml-auto text-slate-200 group-hover:text-indigo-600 transition-colors" size={20} />
-    </button>
+    <Link
+      href={href}
+      className="group w-full bg-white p-4 rounded-[32px] border-2 border-slate-100 hover:border-indigo-600 transition-all flex items-center gap-5 text-left active:scale-95 shadow-sm hover:shadow-md"
+    >
+      <div
+        className={`${color} h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-lg`}
+      >
+        {icon}
+      </div>
+      <div className="flex-1">
+        <h3 className="font-black text-slate-900 uppercase text-sm tracking-tight">
+          {label}
+        </h3>
+        <p className="text-slate-400 text-[10px] font-bold tracking-tight">
+          {desc}
+        </p>
+      </div>
+      <ArrowRight
+        className="ml-auto text-slate-200 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"
+        size={20}
+      />
+    </Link>
   );
 }

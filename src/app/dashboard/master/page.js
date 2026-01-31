@@ -949,28 +949,12 @@
 //     </div>
 //   );
 // }
-
 "use client";
-
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession, signOut } from "next-auth/react";
 import {
-  Loader2,
-  LogOut,
-  MapPin,
-  Navigation,
-  Bus,
-  Home,
-  Phone,
-  CheckCircle2,
-  UserX,
-  ShieldCheck,
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  Search,
-  X,
-  Users 
+  Loader2, LogOut, MapPin, Navigation, Bus, Home, Phone,
+  CheckCircle2, UserX, ShieldCheck, ArrowLeft, ChevronDown, ChevronUp, Search, X, Users 
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -992,6 +976,7 @@ export default function MasterPage() {
   const [expandedId, setExpandedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // UPDATED LOGOUT WITH TOAST AND ANIMATION
   const handleLogout = async () => {
     setIsLoggingOut(true);
     toast.loading("Logging out...", {
@@ -1006,11 +991,7 @@ export default function MasterPage() {
       const res = await fetch("/api/attendance", { cache: "no-store" });
       const data = await res.json();
       setAllMembers(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error("Live Update Error:", e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
@@ -1025,10 +1006,7 @@ export default function MasterPage() {
   const searchedMembers = useMemo(() => {
     if (!searchQuery.trim()) return allMembers;
     const query = searchQuery.toLowerCase().trim();
-    return allMembers.filter(m => 
-      m.name?.toLowerCase().includes(query) || 
-      String(m.phone || m.number || "").includes(query)
-    );
+    return allMembers.filter(m => m.name?.toLowerCase().includes(query) || String(m.phone || "").includes(query));
   }, [allMembers, searchQuery]);
 
   const groupedBusSummaries = useMemo(() => {
@@ -1039,27 +1017,19 @@ export default function MasterPage() {
       if (member.attendence?.[activeAtPoint]) acc[bId].present++;
       return acc;
     }, {});
-
-    const sortedBuses = Object.values(groups).sort((a, b) => 
-      a.id.localeCompare(b.id, undefined, { numeric: true })
-    );
-
-    return sortedBuses.reduce((zones, bus) => {
-      const zoneId = bus.id.split('.')[0]; 
-      if (!zones[zoneId]) zones[zoneId] = [];
-      zones[zoneId].push(bus);
+    const sorted = Object.values(groups).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+    return sorted.reduce((zones, bus) => {
+      const zId = bus.id.split('.')[0]; 
+      if (!zones[zId]) zones[zId] = [];
+      zones[zId].push(bus);
       return zones;
     }, {});
   }, [searchedMembers, activeAtPoint]);
 
   const fleetTotals = useMemo(() => {
-    const dataToCount = selectedBus === "all" 
-      ? searchedMembers 
-      : searchedMembers.filter((m) => String(m.busId) === String(selectedBus));
-
-    const total = dataToCount.length;
-    const present = dataToCount.filter((m) => m.attendence?.[activeAtPoint]).length;
-    
+    const data = selectedBus === "all" ? searchedMembers : searchedMembers.filter((m) => String(m.busId) === String(selectedBus));
+    const total = data.length;
+    const present = data.filter((m) => m.attendence?.[activeAtPoint]).length;
     return { total, present, absent: total - present, isGlobal: selectedBus === "all" };
   }, [searchedMembers, activeAtPoint, selectedBus]);
 
@@ -1067,7 +1037,7 @@ export default function MasterPage() {
     const list = searchedMembers.filter((m) => String(m.busId) === String(selectedBus));
     const total = list.length;
     const present = list.filter((m) => m.attendence?.[activeAtPoint]).length;
-    return { total, present, absent: total - present, percent: total > 0 ? Math.round((present / total) * 100) : 0 };
+    return { total, present, absent: total - present };
   }, [selectedBus, searchedMembers, activeAtPoint]);
 
   const filteredList = useMemo(() => {
@@ -1075,13 +1045,7 @@ export default function MasterPage() {
     return busList.filter((m) => filterTab === "present" ? m.attendence?.[activeAtPoint] : !m.attendence?.[activeAtPoint]);
   }, [searchedMembers, selectedBus, filterTab, activeAtPoint]);
 
-  const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
-
-  if (loading) return (
-    <div className="h-screen flex items-center justify-center bg-white text-indigo-600">
-      <Loader2 className="animate-spin" size={32} />
-    </div>
-  );
+  if (loading) return <div className="h-screen flex items-center justify-center bg-white"><Loader2 className="animate-spin text-indigo-600" size={32} /></div>;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-48 font-sans">
@@ -1089,62 +1053,24 @@ export default function MasterPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {selectedBus !== "all" ? (
-                <button onClick={() => { setSelectedBus("all"); setExpandedId(null); }} className="p-2 bg-slate-100 rounded-xl active:scale-90 transition-all">
-                    <ArrowLeft size={20} className="text-slate-900" />
-                </button>
-            ) : (
-                <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100">
-                    <ShieldCheck size={20} className="text-white" />
-                </div>
-            )}
-            <div>
-              <h1 className="font-black text-xl text-slate-900 tracking-tight leading-none">Fleet Master</h1>
-              <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${currentSlot.color}`}>
-                {currentSlot.label}
-              </span>
-            </div>
+                <button onClick={() => setSelectedBus("all")} className="p-2 bg-slate-50 rounded-xl active:scale-90 transition-all"><ArrowLeft size={20}/></button>
+            ) : <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100"><ShieldCheck size={20} className="text-white"/></div>}
+            <div><h1 className="font-black text-xl text-slate-900 leading-none">Fleet Master</h1><span className={`text-[8px] font-black uppercase ${currentSlot.color}`}>{currentSlot.label}</span></div>
           </div>
-          
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="h-10 w-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-xl active:bg-rose-50 active:text-rose-500 transition-all disabled:opacity-50 shadow-sm"
-          >
-            {isLoggingOut ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <LogOut size={18} />
-            )}
+
+          <button onClick={handleLogout} disabled={isLoggingOut} className="h-10 px-3 flex items-center gap-2 bg-white border border-slate-100 text-slate-400 rounded-xl active:bg-rose-50 active:text-rose-500 transition-all shadow-sm">
+            {isLoggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+            <span className="text-[10px] font-black uppercase tracking-widest">Logout</span>
           </button>
         </div>
-
         <div className="relative group">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-          <input 
-            type="text"
-            placeholder="Search Balak Name or Phone..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 pl-12 pr-12 bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white rounded-2xl outline-none font-bold text-slate-900 placeholder:text-slate-300 transition-all text-sm"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 bg-slate-200 rounded-full hover:bg-slate-300 transition-colors">
-              <X size={12} className="text-slate-600" />
-            </button>
-          )}
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full h-12 pl-12 pr-12 bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all" />
+          {searchQuery && <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 bg-slate-200 rounded-full"><X size={12}/></button>}
         </div>
-
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
           {Object.entries(SLOT_CONFIG).map(([key, config]) => (
-            <button
-              key={key}
-              onClick={() => { setActiveAtPoint(key); setExpandedId(null); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 whitespace-nowrap ${
-                activeAtPoint === key ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-white border-transparent text-slate-300"
-              }`}
-            >
-              <config.icon size={12} /> A{key.split("_")[1]}
-            </button>
+            <button key={key} onClick={() => setActiveAtPoint(key)} className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase transition-all border-2 whitespace-nowrap ${activeAtPoint === key ? `${config.bg} ${config.color} ${config.border} shadow-sm` : "bg-white border-transparent text-slate-300"}`}><config.icon size={12} /> A{key.split("_")[1]}</button>
           ))}
         </div>
       </nav>
@@ -1154,50 +1080,25 @@ export default function MasterPage() {
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-[35px] border border-slate-100 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-5">
-                <div className="h-14 w-14 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center">
-                  <Users size={28} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Members</p>
-                  <h2 className="text-3xl font-black text-slate-900">{overallTotalCount.toLocaleString()}</h2>
-                </div>
+                <div className="h-14 w-14 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center"><Users size={28} /></div>
+                <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Members</p><h2 className="text-3xl font-black text-slate-900">{overallTotalCount.toLocaleString()}</h2></div>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Active Buses</p>
-                <h4 className="text-xl font-black text-indigo-600">{Object.values(groupedBusSummaries).flat().length}</h4>
-              </div>
+              <div className="text-right"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Active Buses</p><h4 className="text-xl font-black text-indigo-600">{Object.values(groupedBusSummaries).flat().length}</h4></div>
             </div>
-
             <div className="space-y-10">
-              {Object.keys(groupedBusSummaries).length > 0 ? Object.keys(groupedBusSummaries).sort((a,b) => Number(a) - Number(b)).map((zoneId) => (
+              {Object.keys(groupedBusSummaries).sort((a,b) => Number(a) - Number(b)).map((zoneId) => (
                 <div key={zoneId} className="space-y-4">
-                  <div className="flex items-center justify-between bg-slate-900 px-5 py-3 rounded-2xl shadow-lg">
-                    <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">Zone {zoneId}</h3>
-                    <div className="px-3 py-1 bg-white/10 rounded-lg text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                      {groupedBusSummaries[zoneId].length} Buses
-                    </div>
-                  </div>
+                  <div className="flex items-center justify-between bg-slate-900 px-5 py-3 rounded-2xl shadow-lg"><h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">Zone {zoneId}</h3><div className="px-3 py-1 bg-white/10 rounded-lg text-[9px] font-black text-slate-400 uppercase">{groupedBusSummaries[zoneId].length} Buses</div></div>
                   <div className="grid gap-3">
                     {groupedBusSummaries[zoneId].map((bus) => (
                       <div key={bus.id} onClick={() => setSelectedBus(bus.id)} className="bg-white p-5 rounded-[30px] border border-slate-100 shadow-sm flex items-center justify-between active:scale-95 transition-all cursor-pointer">
-                        <div className="flex items-center gap-4">
-                          <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black ${currentSlot.bg} ${currentSlot.color}`}>{bus.id}</div>
-                          <div>
-                            <h4 className="font-black text-slate-900 text-lg uppercase leading-none">Bus {bus.id}</h4>
-                            <p className="text-[11px] font-black text-slate-400 uppercase mt-1">{bus.present} / {bus.total} Present</p>
-                          </div>
-                        </div>
+                        <div className="flex items-center gap-4"><div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black ${currentSlot.bg} ${currentSlot.color}`}>{bus.id}</div><div><h4 className="font-black text-slate-900 text-lg uppercase leading-none">Bus {bus.id}</h4><p className="text-[11px] font-black text-slate-400 uppercase mt-1">{bus.present} / {bus.total} Present</p></div></div>
                         <div className={`text-lg font-black ${currentSlot.color}`}>{bus.total > 0 ? Math.round((bus.present / bus.total) * 100) : 0}%</div>
                       </div>
                     ))}
                   </div>
                 </div>
-              )) : (
-                <div className="text-center py-20 bg-white rounded-[40px] border border-dashed border-slate-200">
-                  <UserX className="mx-auto text-slate-200 mb-4" size={48} />
-                  <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">No matching results</p>
-                </div>
-              )}
+              ))}
             </div>
           </div>
         ) : (
@@ -1205,72 +1106,36 @@ export default function MasterPage() {
             <div className="bg-slate-900 rounded-[35px] p-6 text-white shadow-xl">
                <h2 className="text-2xl font-black uppercase mb-4">Bus {selectedBus} Detail</h2>
                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white/5 p-4 rounded-2xl">
-                    <p className="text-[8px] text-slate-500 font-black uppercase">Present</p>
-                    <p className="text-xl font-black text-emerald-400">{busStats.present}</p>
-                  </div>
-                  <div className="bg-white/5 p-4 rounded-2xl">
-                    <p className="text-[8px] text-slate-500 font-black uppercase">Absent</p>
-                    <p className="text-xl font-black text-rose-400">{busStats.absent}</p>
-                  </div>
+                  <div className="bg-white/5 p-4 rounded-2xl text-center"><p className="text-[8px] font-black uppercase">Present</p><p className="text-xl font-black text-emerald-400">{busStats.present}</p></div>
+                  <div className="bg-white/5 p-4 rounded-2xl text-center"><p className="text-[8px] font-black uppercase">Absent</p><p className="text-xl font-black text-rose-400">{busStats.absent}</p></div>
                </div>
             </div>
-
             <div className="flex p-1 bg-slate-100 rounded-2xl">
               <button onClick={() => setFilterTab("present")} className={`flex-1 py-3 text-[10px] font-black uppercase rounded-xl transition-all ${filterTab === "present" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"}`}>Present</button>
               <button onClick={() => setFilterTab("absent")} className={`flex-1 py-3 text-[10px] font-black uppercase rounded-xl transition-all ${filterTab === "absent" ? "bg-white text-rose-600 shadow-sm" : "text-slate-400"}`}>Absent</button>
             </div>
-
             <div className="space-y-2">
-              {filteredList.length > 0 ? filteredList.map(person => {
-                const personId = person._id || person.id || person.phone;
-                const hasPhone = person.phone || person.number;
-                const isExpanded = expandedId === personId;
-                return (
-                  <div key={personId} className="flex flex-col bg-white rounded-2xl border border-slate-100 overflow-hidden transition-all">
-                    <div onClick={() => hasPhone && toggleExpand(personId)} className={`p-4 flex items-center justify-between ${hasPhone ? 'cursor-pointer active:bg-slate-50' : ''}`}>
-                      <div className="flex flex-col">
-                        <p className="font-black text-slate-900 text-sm">{person.name}</p>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase">{person.role} • {person.mandal}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {hasPhone && (isExpanded ? <ChevronUp size={14} className="text-slate-300" /> : <ChevronDown size={14} className="text-slate-300" />)}
-                        {person.attendence?.[activeAtPoint] ? <CheckCircle2 className="text-emerald-500" size={18}/> : <UserX className="text-rose-400" size={18}/>}
-                      </div>
-                    </div>
-                    {hasPhone && isExpanded && (
-                      <div className="px-4 pb-4 pt-0 animate-in slide-in-from-top-2 duration-200">
-                        <a href={`tel:${person.phone || person.number}`} className="flex items-center justify-center gap-2 w-full py-2 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest border border-indigo-100"><Phone size={12} /> Call {person.phone || person.number}</a>
-                      </div>
-                    )}
-                  </div>
-                );
-              }) : (
-                <p className="text-center py-10 text-slate-400 font-bold uppercase text-[9px]">No {filterTab} balaks match search</p>
-              )}
+              {filteredList.map(person => (
+                <div key={person.id || person.phone} className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                  <div><p className="font-black text-slate-900 text-sm">{person.name}</p><p className="text-[8px] font-bold text-slate-400 uppercase">{person.role}</p></div>
+                  {person.attendence?.[activeAtPoint] ? <CheckCircle2 className="text-emerald-500" size={18}/> : <UserX className="text-rose-400" size={18}/>}
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 z-40 pointer-events-none">
-        <div className="max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl rounded-[35px] p-6 flex items-center justify-between pointer-events-auto shadow-2xl text-white border border-white/10">
-          <div className="flex flex-col pl-2">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
-               {fleetTotals.isGlobal ? "Total Attendance" : `Bus ${selectedBus} Filtered Total`}
-            </p>
-            <h2 className="text-white font-black text-sm uppercase tracking-tight">{currentSlot.label}</h2>
+      <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 z-40 pointer-events-none">
+        <div className="max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl rounded-[30px] md:rounded-[35px] p-4 md:p-6 flex items-center justify-between pointer-events-auto shadow-2xl text-white border border-white/10">
+          <div className="flex flex-col pl-1 md:pl-2">
+            <p className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-tight">{fleetTotals.isGlobal ? "Total Attendance" : `Bus ${selectedBus} Total`}</p>
+            <h2 className="text-white font-black text-xs md:text-sm uppercase tracking-tight truncate max-w-[100px] md:max-w-none">{currentSlot.label}</h2>
           </div>
-          <div className="flex items-center gap-8 pr-2">
-            <div className="flex flex-col items-center">
-              <p className="text-[9px] text-emerald-500 font-black uppercase tracking-widest mb-1">Present</p>
-              <p className="text-2xl font-black text-white leading-none">{fleetTotals.present}</p>
-            </div>
-            <div className="h-8 w-px bg-white/10" />
-            <div className="flex flex-col items-center">
-              <p className="text-[9px] text-rose-500 font-black uppercase tracking-widest mb-1">Absent</p>
-              <p className="text-2xl font-black text-white leading-none">{fleetTotals.absent}</p>
-            </div>
+          <div className="flex items-center gap-4 md:gap-8 pr-1 md:pr-2">
+            <div className="flex flex-col items-center"><p className="text-[8px] md:text-[9px] text-emerald-500 font-black uppercase tracking-widest mb-1">Present</p><p className="text-xl md:text-2xl font-black text-white leading-none">{fleetTotals.present}</p></div>
+            <div className="h-8 w-px bg-white/10 mx-1 md:mx-0" />
+            <div className="flex flex-col items-center"><p className="text-[8px] md:text-[9px] text-rose-500 font-black uppercase tracking-widest mb-1">Absent</p><p className="text-xl md:text-2xl font-black text-white leading-none">{fleetTotals.absent}</p></div>
           </div>
         </div>
       </div>

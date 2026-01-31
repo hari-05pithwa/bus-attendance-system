@@ -948,3 +948,198 @@ export default function AttendancePage() {
     </div>
   );
 }
+// "use client";
+// import { useSession, signOut } from "next-auth/react";
+// import { useEffect, useState, useCallback, useMemo } from "react";
+// import { ArrowLeft, Search, X, Loader2, MapPin, Navigation, Home, Bus, ShieldCheck, UserCheck, Baby, LogOut, Phone } from "lucide-react";
+// import Link from "next/link";
+// import AttendanceRow from "../../../components/AttendanceRow";
+// import { toast } from "sonner";
+
+// const HighlightedText = ({ text, query }) => {
+//   if (!query.trim()) return <span>{text}</span>;
+//   const regex = new RegExp(`(${query})`, "gi");
+//   const parts = text.split(regex);
+//   return (
+//     <span>
+//       {parts.map((part, i) => 
+//         regex.test(part) ? (
+//           <span key={i} className="text-indigo-600 bg-indigo-50 px-0.5 rounded-sm font-bold">{part}</span>
+//         ) : <span key={i}>{part}</span>
+//       )}
+//     </span>
+//   );
+// };
+
+// const SLOT_CONFIG = {
+//   At_1: { label: "Source Pickup", icon: MapPin, color: "text-indigo-600", bg: "bg-indigo-50", desc: "Source → Bus" },
+//   At_2: { label: "Destination Drop", icon: Navigation, color: "text-emerald-600", bg: "bg-emerald-50", desc: "Bus → Destination" },
+//   At_3: { label: "Return Boarding", icon: Bus, color: "text-amber-600", bg: "bg-amber-50", desc: "Destination → Bus" },
+//   At_4: { label: "Final Drop-off", icon: Home, color: "text-rose-600", bg: "bg-rose-50", desc: "Bus → Source" }
+// };
+
+// export default function AttendancePage() {
+//   const { data: session } = useSession();
+//   const [members, setMembers] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [isLoggingOut, setIsLoggingOut] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [isSearchOpen, setIsSearchOpen] = useState(false);
+//   const [activeAtPoint, setActiveAtPoint] = useState("At_1");
+
+//   const currentSlot = SLOT_CONFIG[activeAtPoint];
+
+//   const handleLogout = async () => {
+//     setIsLoggingOut(true);
+//     toast.loading("Logging out...", { id: "logout-toast", position: "top-center" });
+//     await signOut({ callbackUrl: "/" });
+//   };
+
+//   const fetchMembers = useCallback(async () => {
+//     if (!session?.user?.busId) return;
+//     try {
+//       const cleanBusId = String(session.user.busId);
+//       const res = await fetch(`/api/attendance?busId=${cleanBusId}`, { cache: 'no-store' });
+//       const data = await res.json();
+//       setMembers(Array.isArray(data) ? data : []);
+//     } catch (error) { console.error(error); } finally { setLoading(false); }
+//   }, [session]);
+
+//   useEffect(() => {
+//     if (session?.user?.busId) fetchMembers();
+//   }, [session, fetchMembers]);
+
+//   const handleToggle = async (uniqueKey, slotKey, currentStatus) => {
+//     const newStatus = !currentStatus;
+//     const updates = { [slotKey]: newStatus };
+//     if (slotKey === "At_3" && newStatus === false) { updates["At_4"] = false; }
+
+//     setMembers(p => p.map(m => (m.id || m.phone) === uniqueKey 
+//       ? { ...m, attendence: { ...m.attendence, ...updates } } : m
+//     ));
+
+//     try {
+//       await fetch("/api/attendance", {
+//         method: "PATCH",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ ids: [uniqueKey], attendanceKey: slotKey, status: newStatus }),
+//       });
+//       if (slotKey === "At_3" && newStatus === false) {
+//         await fetch("/api/attendance", {
+//           method: "PATCH",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({ ids: [uniqueKey], attendanceKey: "At_4", status: false }),
+//         });
+//       }
+//     } catch (e) { fetchMembers(); }
+//   };
+
+//   const categorizedData = useMemo(() => {
+//     const q = searchQuery.toLowerCase().trim();
+//     const filterBy = (gender, role) => members.filter(m => 
+//         m.gender?.toLowerCase() === gender.toLowerCase() && 
+//         m.role?.toLowerCase() === role.toLowerCase() && 
+//         (q === "" || m.name.toLowerCase().includes(q))
+//     );
+//     return {
+//       male: { caretaker: filterBy("male", "balak care taker"), balak: filterBy("male", "balak"), karyakar: filterBy("male", "bal karyakar") },
+//       female: { caretaker: filterBy("female", "balika care taker"), balika: filterBy("female", "balika"), karyakar: filterBy("female", "balika karyakar") }
+//     };
+//   }, [members, searchQuery]);
+
+//   const stats = useMemo(() => {
+//     const total = members.length;
+//     const present = members.filter(m => m.attendence?.[activeAtPoint] === true).length;
+//     return { total, present, percent: total > 0 ? Math.round((present / total) * 100) : 0 };
+//   }, [members, activeAtPoint]);
+
+//   const renderSection = (title, data, SectionIcon, colorClass) => {
+//     if (data.length === 0) return null;
+//     return (
+//       <div className="bg-slate-50/50 rounded-[32px] p-2 border border-slate-100">
+//         <div className="flex items-center gap-3 px-4 py-4">
+//           <div className={`h-8 w-8 rounded-lg bg-white shadow-sm flex items-center justify-center ${colorClass}`}><SectionIcon size={18} /></div>
+//           <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">{title}</h3>
+//           <div className="ml-auto bg-slate-200/50 px-2.5 py-1 rounded-full text-[10px] font-black text-slate-500">{data.length}</div>
+//         </div>
+//         <div className="space-y-1">
+//           {data.map(p => (
+//             <AttendanceRow key={p.id || p.phone} person={p} onToggle={handleToggle} searchQuery={searchQuery} highlightComponent={HighlightedText} activeSlot={activeAtPoint} />
+//           ))}
+//         </div>
+//       </div>
+//     );
+//   };
+
+//   if (loading) return <div className="flex h-screen items-center justify-center bg-white"><Loader2 className="animate-spin text-indigo-600" /></div>;
+
+//   return (
+//     <div className="min-h-screen bg-[#FDFDFF] pb-40">
+//       <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-100">
+//         <div className="px-6 py-6 flex items-center justify-between">
+//           {!isSearchOpen ? (
+//             <>
+//               <div className="flex items-center gap-3">
+//                 {/* BACK BUTTON TO DASHBOARD */}
+//                 <Link 
+//                   href="/dashboard" 
+//                   className="p-2.5 bg-slate-50 text-slate-900 rounded-xl active:scale-90 transition-all border border-slate-100"
+//                 >
+//                   <ArrowLeft size={20} />
+//                 </Link>
+
+//                 <div className="flex flex-col ml-1">
+//                     <h1 className="font-black text-lg tracking-tight uppercase leading-none">Bus {session?.user?.busId}</h1>
+//                     <span className={`text-[9px] font-black uppercase tracking-widest mt-1 ${currentSlot.color}`}>{currentSlot.label}</span>
+//                 </div>
+//               </div>
+
+//               <div className="flex gap-2">
+//                 <button onClick={() => setIsSearchOpen(true)} className="p-3 bg-slate-50 text-slate-400 rounded-2xl active:scale-90"><Search size={20}/></button>
+//                 <button onClick={handleLogout} disabled={isLoggingOut} className="p-3 bg-white border border-slate-100 text-slate-400 rounded-2xl active:bg-rose-50 active:text-rose-500 shadow-sm transition-all">
+//                   {isLoggingOut ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
+//                 </button>
+//               </div>
+//             </>
+//           ) : (
+//             <div className="flex items-center w-full gap-2 animate-in slide-in-from-top-2">
+//               <input autoFocus className="flex-1 h-12 bg-slate-100 rounded-2xl px-5 font-bold outline-none" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+//               <button onClick={() => {setIsSearchOpen(false); setSearchQuery("");}} className="p-3 bg-slate-900 text-white rounded-2xl"><X size={20}/></button>
+//             </div>
+//           )}
+//         </div>
+
+//         <div className="flex px-6 pb-5 gap-3 overflow-x-auto no-scrollbar">
+//           {Object.entries(SLOT_CONFIG).map(([key, config]) => (
+//             <button key={key} onClick={() => setActiveAtPoint(key)} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 whitespace-nowrap ${activeAtPoint === key ? `${config.bg} ${config.color} ${config.color.replace('text', 'border')} shadow-md` : 'bg-white border-transparent text-slate-300'}`}>
+//                 <config.icon size={14} /> A{key.split('_')[1]}
+//             </button>
+//           ))}
+//         </div>
+//       </div>
+
+//       <div className="px-6 max-w-2xl mx-auto space-y-12 pt-8">
+//         {(categorizedData.male.caretaker.length > 0 || categorizedData.male.balak.length > 0 || categorizedData.male.karyakar.length > 0) && (
+//           <div className="space-y-6">
+//             <div className="flex items-center gap-3 px-2"><div className="h-6 w-1.5 bg-blue-500 rounded-full" /><h2 className="text-2xl font-black uppercase">Bal Mandal</h2></div>
+//             <div className="space-y-6">
+//               {renderSection("Balak care taker", categorizedData.male.caretaker, ShieldCheck, "text-blue-500")}
+//               {renderSection("Balak", categorizedData.male.balak, Baby, "text-rose-500")}
+//               {renderSection("Bal karyakar", categorizedData.male.karyakar, UserCheck, "text-indigo-500")}
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 z-40 pointer-events-none">
+//         <div className="max-w-md mx-auto bg-slate-900/95 backdrop-blur-2xl rounded-[30px] md:rounded-[35px] p-4 flex items-center justify-between pointer-events-auto shadow-2xl text-white">
+//           <div className="flex flex-col pl-2">
+//             <p className={`text-[8px] uppercase font-black tracking-widest mb-0.5 ${currentSlot.color}`}>{currentSlot.label}</p>
+//             <p className="text-xl font-black">{stats.present} <span className="text-slate-500 text-xs">/ {stats.total}</span></p>
+//           </div>
+//           <Link href="/dashboard/tally" className="bg-indigo-600 px-6 py-3.5 rounded-[20px] font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Final Tally</Link>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
