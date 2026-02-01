@@ -579,7 +579,7 @@ import {
 } from "lucide-react";
 
 export default function RoleSelectionPage() {
-  const EXPO_LINK = "https://expo.dev/artifacts/eas/cJHdwrB3VsBUG7ECdHVoie.apk";
+  const EXPO_LINK = "https://expo.dev/artifacts/eas/x7eQzpNfaRXy4CRWkTWh4v.apk";
 
   return (
     <div className="h-[100dvh] flex flex-col items-center justify-center bg-[#F8FAFC] px-6 overflow-hidden relative font-sans">
